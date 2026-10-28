@@ -1,0 +1,83 @@
+<div class="space-y-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Dashboard Overview</h1>
+      <p class="text-sm text-slate-500 mt-1">Monitor income, expenses, and net cash flow in real-time.</p>
+    </div>
+    <%= link_to "+ New Transaction", new_transaction_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-semibold shadow-md transition duration-200 text-sm" %>
+  </div>
+
+  <% 
+    total_income = @transactions.select { |t| t.transaction_type.to_s.downcase == "income" }.sum(&:amount)
+    total_expense = @transactions.select { |t| t.transaction_type.to_s.downcase == "expense" }.sum(&:amount)
+    net_balance = total_income - total_expense
+  %>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Income</p>
+      <p class="text-3xl font-extrabold text-emerald-600 mt-2">$<%= sprintf("%.2f", total_income) %></p>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Expenses</p>
+      <p class="text-3xl font-extrabold text-rose-600 mt-2">$<%= sprintf("%.2f", total_expense) %></p>
+    </div>
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Net Balance</p>
+      <p class="text-3xl font-extrabold <%= net_balance >= 0 ? "text-indigo-600" : "text-rose-600" %> mt-2">$<%= sprintf("%.2f", net_balance) %></p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+      <h3 class="font-bold text-slate-800 text-base">Transaction History</h3>
+      <span class="text-xs text-slate-400 font-medium"><%= @transactions.count %> total records</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider font-semibold">
+            <th class="px-6 py-3">Date</th>
+            <th class="px-6 py-3">Title</th>
+            <th class="px-6 py-3">Category</th>
+            <th class="px-6 py-3">Type</th>
+            <th class="px-6 py-3 text-right">Amount</th>
+            <th class="px-6 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 text-sm">
+          <% if @transactions.empty? %>
+            <tr>
+              <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                No transactions found. Click <%= link_to "New Transaction", new_transaction_path, class: "text-indigo-600 font-semibold underline" %> to get started.
+              </td>
+            </tr>
+          <% else %>
+            <% @transactions.each do |transaction| %>
+              <tr class="hover:bg-slate-50/50 transition">
+                <td class="px-6 py-4 text-slate-500 whitespace-nowrap"><%= transaction.date %></td>
+                <td class="px-6 py-4 font-semibold text-slate-900"><%= transaction.title %></td>
+                <td class="px-6 py-4">
+                  <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600"><%= transaction.category %></span>
+                </td>
+                <td class="px-6 py-4">
+                  <% is_income = transaction.transaction_type.to_s.downcase == "income" %>
+                  <span class="px-2.5 py-1 rounded-full text-xs font-semibold <%= is_income ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700" %>">
+                    <%= transaction.transaction_type %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right font-bold <%= is_income ? "text-emerald-600" : "text-slate-900" %>">
+                  <%= is_income ? "+" : "-" %>$<%= sprintf("%.2f", transaction.amount.to_f) %>
+                </td>
+                <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                  <%= link_to "Show", transaction, class: "text-indigo-600 hover:text-indigo-900 font-medium text-xs bg-indigo-50 px-3 py-1.5 rounded-lg" %>
+                  <%= link_to "Edit", edit_transaction_path(transaction), class: "text-amber-600 hover:text-amber-900 font-medium text-xs bg-amber-50 px-3 py-1.5 rounded-lg" %>
+                  <%= link_to "Delete", transaction, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "text-rose-600 hover:text-rose-900 font-medium text-xs bg-rose-50 px-3 py-1.5 rounded-lg" %>
+                </td>
+              </tr>
+            <% end %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

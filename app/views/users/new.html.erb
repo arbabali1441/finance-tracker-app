@@ -1,0 +1,35 @@
+<div class="min-h-[80vh] flex items-center justify-center px-4 py-12">
+  <div class="max-w-md w-full p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6">
+    <div class="text-center space-y-2">
+      <div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center font-black text-xl mx-auto">W</div>
+      <h2 class="text-2xl font-black text-white">Create Pro Account</h2>
+      <p class="text-slate-400 text-xs">Start managing multi-currency liquidity in seconds.</p>
+    </div>
+
+    <%= form_with model: @user, local: true, class: "space-y-4 text-xs" do |f| %>
+      <div class="space-y-1">
+        <label class="font-semibold text-slate-300">Full Name</label>
+        <%= f.text_field :name, placeholder: "Alex Johnson", required: true, class: "w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500" %>
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-semibold text-slate-300">Email Address</label>
+        <%= f.email_field :email, placeholder: "alex@wealthpulse.io", required: true, class: "w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500" %>
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-semibold text-slate-300">Password</label>
+        <%= f.password_field :password, placeholder: "••••••••", required: true, class: "w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500" %>
+      </div>
+
+      <div class="space-y-1">
+        <label class="font-semibold text-slate-300">Confirm Password</label>
+        <%= f.password_field :password_confirmation, placeholder: "••••••••", required: true, class: "w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500" %>
+      </div>
+
+      <%= f.submit "Create Account", class: "w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-2" %>
+    <% end %>
+
+    <p class="text-center text-slate-500 text-xs">Already have an account? <a href="/login" class="text-indigo-400 hover:underline font-bold">Sign In</a></p>
+  </div>
+</div>

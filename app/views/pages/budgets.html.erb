@@ -1,0 +1,121 @@
+<div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+  
+  <!-- HERO BANNER FOR BUDGETS -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 shadow-2xl">
+    <div class="space-y-2">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
+        <i class="fa-solid fa-piggy-bank"></i> Expense Control Center
+      </div>
+      <h2 class="text-2xl font-black text-white">Take control of your expenses and save more money with budgets!</h2>
+      <p class="text-slate-400 text-xs">Monitor monthly spending limits across categories and protect your cash flow from impulse outflows.</p>
+    </div>
+    <button onclick="openBudgetModal()" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-indigo-600/30 flex items-center gap-2 whitespace-nowrap cursor-pointer">
+      <i class="fa-solid fa-plus"></i> Add New Budget
+    </button>
+  </div>
+
+  <!-- BUDGET CARDS GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% @budgets.each do |b| %>
+      <% percentage = b.limit_amount > 0 ? (b.spent_amount.to_f / b.limit_amount.to_f * 100).round : 0 %>
+      <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-lg space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-white text-sm flex items-center gap-2">
+            <i class="fa-solid fa-tag text-indigo-400"></i> <%= b.category %>
+          </h3>
+          <span class="text-[10px] font-bold px-2.5 py-1 rounded-full <%= percentage > 90 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' %>">
+            <%= percentage %>% Spent
+          </span>
+        </div>
+
+        <div class="flex items-baseline justify-between font-mono text-xs">
+          <span class="text-slate-400">Spent: <b class="text-white">$<%= sprintf('%.2f', b.spent_amount.to_f) %></b></span>
+          <span class="text-slate-400">Limit: <b class="text-indigo-400">$<%= sprintf('%.2f', b.limit_amount.to_f) %></b></span>
+        </div>
+
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div class="h-full <%= percentage > 90 ? 'bg-rose-500' : 'bg-indigo-600' %>" style="width: <%= [percentage, 100].min %>%"></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+</div>
+
+<!-- CREATE ADVANCED BUDGET MODAL -->
+<div id="budgetModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+  <div class="max-w-lg w-full mx-4 p-8 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+    
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <h3 class="text-base font-black text-white flex items-center gap-2">
+        <i class="fa-solid fa-piggy-bank text-indigo-500"></i> Add New Budget
+      </h3>
+      <button onclick="closeBudgetModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <%= form_with url: create_budget_path, local: true, class: "space-y-5 text-xs" do |f| %>
+      
+      <!-- GENERAL INFO SECTION -->
+      <div class="space-y-3">
+        <h4 class="font-bold text-indigo-400 uppercase tracking-wider text-[10px]">General Info</h4>
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-300">Budget Name / Category</label>
+          <%= f.text_field :category, placeholder: "e.g. Food & Drink, Tech, Travel", required: true, class: "w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500" %>
+        </div>
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-300">Currency</label>
+          <select name="currency" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-bold">
+            <option value="USD">United States dollar ($)</option>
+            <option value="AED">UAE Dirham (AED)</option>
+            <option value="EUR">Euro (€)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- FILTER SECTION -->
+      <div class="space-y-3 pt-2 border-t border-slate-800">
+        <h4 class="font-bold text-indigo-400 uppercase tracking-wider text-[10px]">Budget Filter</h4>
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-300">Category Filter</label>
+          <select name="filter_category" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500">
+            <option value="All">All categories</option>
+            <option value="Food">Food & Drink</option>
+            <option value="Subscriptions">Subscriptions</option>
+            <option value="Transport">Transport</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- RECURRENCE & PERIOD SECTION -->
+      <div class="space-y-3 pt-2 border-t border-slate-800">
+        <h4 class="font-bold text-indigo-400 uppercase tracking-wider text-[10px]">Budget Period & Recurrence</h4>
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-300">Recurrence Frequency</label>
+          <select name="recurrence" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500">
+            <option value="Once">Once</option>
+            <option value="Daily">Daily</option>
+            <option value="Weekly">Weekly</option>
+            <option value="Biweekly">Biweekly</option>
+            <option value="Monthly" selected>Monthly</option>
+            <option value="Yearly">Yearly</option>
+          </select>
+        </div>
+        <div class="space-y-1">
+          <label class="font-semibold text-slate-300">Spending Limit Amount ($)</label>
+          <%= f.number_field :limit_amount, step: "0.01", placeholder: "500.00", required: true, class: "w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 font-mono" %>
+        </div>
+      </div>
+
+      <%= f.submit "Create a Budget", class: "w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4" %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function openBudgetModal() {
+    document.getElementById('budgetModal').classList.remove('hidden');
+  }
+  function closeBudgetModal() {
+    document.getElementById('budgetModal').classList.add('hidden');
+  }
+</script>

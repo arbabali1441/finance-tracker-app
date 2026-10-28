@@ -1,14 +1,164 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>FinanceTracker</title>
+    <title>WealthPulse Pro - Fintech SaaS</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
-    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+      body { background-color: #020617; color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+      .panic-blurred { filter: blur(8px); transition: filter 0.3s ease; }
+    </style>
   </head>
 
-  <body>
-    <%= yield %>
+  <body class="min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+    
+    <% if logged_in? %>
+      <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div class="flex items-center gap-8">
+            <a href="/" class="flex items-center gap-3 group">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-600/30 group-hover:scale-105 transition">
+                W
+              </div>
+              <span class="font-black text-white tracking-wide text-sm">WealthPulse <span class="text-indigo-400 font-normal">PRO</span></span>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-2 text-xs font-semibold">
+              <a href="/" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-900 transition flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-indigo-400"></i> Dashboard
+              </a>
+              <a href="/budgets" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-900 transition flex items-center gap-2">
+                <i class="fa-solid fa-piggy-bank text-indigo-400"></i> Budgets
+              </a>
+            </nav>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button onclick="togglePanicBlur()" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer">
+              <i class="fa-solid fa-eye-slash text-indigo-400" id="panicIcon"></i>
+              <span class="hidden sm:inline">Panic Blur</span>
+            </button>
+
+            <div class="relative pl-4 border-l border-slate-800">
+              <button onclick="toggleProfileMenu(event)" class="flex items-center gap-3 cursor-pointer group focus:outline-none">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-indigo-500/20 group-hover:scale-105 transition">
+                  <%= current_user.name.to_s.first.upcase rescue 'U' %>
+                </div>
+                <div class="hidden sm:block text-left">
+                  <p class="text-xs font-bold text-white leading-none group-hover:text-indigo-400 transition"><%= current_user.name %></p>
+                  <p class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                    Pro Tier <i class="fa-solid fa-chevron-down text-[8px] text-slate-500"></i>
+                  </p>
+                </div>
+              </button>
+
+              <div id="profileDropdown" class="absolute right-0 mt-3 w-56 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl py-2 hidden z-50 text-xs divide-y divide-slate-800/60">
+                <div class="px-4 py-3">
+                  <p class="font-bold text-white"><%= current_user.name %></p>
+                  <p class="text-[10px] text-slate-400 truncate"><%= current_user.email %></p>
+                  <span class="inline-block mt-2 px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[9px] font-bold">
+                    <i class="fa-solid fa-shield-halved"></i> Pro Member
+                  </span>
+                </div>
+
+                <div class="py-1">
+                  <a href="/profile" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-user-gear text-indigo-400 w-4"></i> Profile Hub
+                  </a>
+                  <a href="/settings" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-gear text-slate-400 w-4"></i> App Settings
+                  </a>
+                  <a href="/subscription" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-crown text-amber-400 w-4"></i> Subscription & Billing
+                  </a>
+                  <a href="/security" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-shield-halved text-rose-400 w-4"></i> Security & Privacy
+                  </a>
+                  <a href="/bank_connect" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-building-columns text-emerald-400 w-4"></i> Bank Sync (Plaid)
+                  </a>
+                  <a href="/support" class="flex items-center gap-2.5 px-4 py-2 text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
+                    <i class="fa-solid fa-circle-question text-indigo-300 w-4"></i> Help & Support
+                  </a>
+                </div>
+
+                <div class="py-1">
+                  <a href="/logout" class="flex items-center gap-2.5 px-4 py-2 text-rose-400 hover:bg-rose-500/10 transition font-bold">
+                    <i class="fa-solid fa-right-from-bracket w-4"></i> Sign Out
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </header>
+    <% end %>
+
+    <main class="flex-grow" id="appMainContent">
+      <% if flash[:notice] %>
+        <div class="max-w-7xl mx-auto px-6 pt-4">
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> <%= flash[:notice] %>
+          </div>
+        </div>
+      <% end %>
+      
+      <% if flash[:alert] %>
+        <div class="max-w-7xl mx-auto px-6 pt-4">
+          <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i> <%= flash[:alert] %>
+          </div>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-slate-900 py-6 text-center text-slate-500 text-xs mt-12 bg-slate-950/40">
+      <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-indigo-600/30 flex items-center justify-center text-indigo-400 font-black text-[10px]">W</div>
+          <span class="font-bold text-slate-400">WealthPulse Pro Engine</span>
+        </div>
+        <p>&copy; 2026 WealthPulse Pro Inc. All Rights Reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      let isBlurred = false;
+      function togglePanicBlur() {
+        isBlurred = !isBlurred;
+        const mainContent = document.getElementById('appMainContent');
+        const icon = document.getElementById('panicIcon');
+        if (isBlurred) {
+          mainContent.classList.add('panic-blurred');
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+        } else {
+          mainContent.classList.remove('panic-blurred');
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+        }
+      }
+
+      function toggleProfileMenu(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('profileDropdown');
+        if (menu) menu.classList.toggle('hidden');
+      }
+
+      window.addEventListener('click', function(e) {
+        const menu = document.getElementById('profileDropdown');
+        if (menu && !menu.classList.contains('hidden')) {
+          menu.classList.add('hidden');
+        }
+      });
+    </script>
   </body>
 </html>
